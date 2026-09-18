@@ -1,12 +1,21 @@
 # CreditGuard — Explainable Loan Default Risk Prediction
 
+![Python](https://img.shields.io/badge/Python-3.9-blue)
+![scikit--learn](https://img.shields.io/badge/scikit--learn-ML-orange)
+![Streamlit](https://img.shields.io/badge/Streamlit-App-red)
+![SHAP](https://img.shields.io/badge/Explainability-SHAP-9cf)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 Predicts the probability that a loan applicant will default, using 2M+ real
 LendingClub loan records (2007–2018). Built to go beyond a standard sklearn
 tutorial: handles severe class imbalance, compares four models honestly
 (catching a metric that was misleading on its face), explains every
 prediction with SHAP, and ships as an interactive risk-scoring web app.
 
-**[Notebook](notebooks/01_eda_and_modeling.ipynb) · [App source](src/app.py)**
+🚀 **[Try the live app →](https://your-app-name.streamlit.app)**
+📓 **[Notebook](notebooks/01_eda_and_modeling.ipynb)** · 💻 **[App source](src/app.py)**
+
+![CreditGuard app screenshot](assets/screenshot.png)
 
 ---
 
@@ -70,26 +79,36 @@ recall matters more than a marginal AUC difference here.
 
 ### Business impact (estimated)
 
-At the selected threshold, the confusion matrix on the test set
-translates to approximately:
+At the selected threshold, the confusion matrix on the test set (269,070
+loans) breaks down as:
 
-- **True positives (defaults correctly flagged):** *[fill in from your
-  notebook's Section 18 output]*
-- **False negatives (defaults missed):** *[fill in]*
-- **Estimated capital at risk from missed defaults:** *[fill in —
-  `false negatives × average loan amount`]*
+| Outcome | Count | Estimated capital |
+|---|---|---|
+| True positives (defaults correctly flagged) | 19,789 | $285,356,785 |
+| False negatives (defaults missed) | 33,931 | **$489,284,000 at risk** |
+| False positives (false alarms) | 33,686 | — |
 
-This is a rough, order-of-magnitude estimate (average loan amount ×
-error counts), not a calibrated financial model — but it's enough to
-show the model catching a meaningful share of at-risk capital that a
-naive "approve everyone" baseline would miss entirely.
+(Average loan amount: $14,420. Dollar figures = count × average loan
+amount.)
+
+This is a rough, order-of-magnitude estimate, not a calibrated financial
+model — but it shows the model correctly flagging roughly **37% of
+at-risk capital** that a naive "approve everyone" baseline would miss
+entirely, while still leaving a meaningful gap (the $489M in missed
+defaults) that motivates the threshold-tuning and cost-sensitive-learning
+follow-ups noted below.
 
 ### Top SHAP drivers
 
-*[Fill in the top 3 features from your SHAP summary plot — likely
-`grade`/`sub_grade`, `dti`, and `revol_util` based on sanity checks: a
-Grade A / 10+ years applicant scored ~0.2% risk vs. a Grade G / <1 year
-applicant at ~65%.]*
+`int_rate` and `loan_amnt` are consistently among the strongest drivers
+of predicted risk, both individually and through their interaction with
+each other — higher interest rates (which LendingClub itself assigns
+based on perceived risk) and larger loan amounts push predicted default
+risk up. Loan grade/sub-grade, revolving utilization, and DTI also show
+up as meaningful contributors in individual prediction explanations (see
+the notebook's SHAP waterfall plots for specific-applicant breakdowns —
+e.g. a Grade A / 10+ years-employed applicant scores ~0.2% predicted
+risk vs. ~65% for a Grade G / <1 year applicant).
 
 ---
 
